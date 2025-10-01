@@ -146,19 +146,27 @@ print("Verification successful!")
 print("\nBut recomputing P_prime3 is expensive for the verifier")
 print("Let's improve it")
 xs = [x1, x2, x3]
-s_vals = []
+
+s_G = [Fr(1) for _ in range(N)]
+s_H = [Fr(1) for _ in range(N)]
+
 for i in range(N):
-    s = 1
+    i_bits = bin(i)[2:].zfill(int(math.log(N, 2)))
     for j in range(int(math.log(N, 2))):
-        bit_j = int(bin(i)[2:].zfill(int(math.log(N, 2)))[j])
-        b = 1 if bit_j == 1 else -1
-        s *= xs[j] ^ b
-    s_vals.append(s)
-inv_s_vals = [1 / s for s in s_vals]
-print("s_vals = ", s_vals)
-final_G = inner_product(s_vals, Gs)
-final_H = inner_product(inv_s_vals, Hs)
-assert final_G == G_prime3[0]
-assert final_H == H_prime3[0]
+        bit_j = int(i_bits[j])
+        if bit_j == 1:
+            s_G[i] *= xs[j]
+            s_H[i] *= xs[j] ^ -1
+        else:
+            s_G[i] *= xs[j] ^ -1
+            s_H[i] *= xs[j]
+
+print("s_G = ", s_G)
+print("s_H = ", s_H)
+
+G_final = inner_product(s_G, Gs)
+H_final = inner_product(s_H, Hs)
+assert G_final == G_prime3[0]
+assert H_final == H_prime3[0]
 
 print("Verification (with optimization) successful!")
