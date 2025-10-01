@@ -24,12 +24,8 @@ def get_LR(a, b):
 
 
 # This needs to be even length
-# a = vector([Fp.random_element() for _ in range(8)])
-# b = vector([Fp.random_element() for _ in range(8)])
-a = vector([Fp(852), Fp(264), Fp(292), Fp(735),
-           Fp(123), Fp(456), Fp(789), Fp(101)])
-b = vector([Fp(352), Fp(192), Fp(482), Fp(657),
-           Fp(910), Fp(387), Fp(819), Fp(868)])
+a = vector([Fp.random_element() for _ in range(8)])
+b = vector([Fp.random_element() for _ in range(8)])
 
 c = a * b
 print("We want to prove that c = a * b")
