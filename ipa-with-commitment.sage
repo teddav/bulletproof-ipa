@@ -156,9 +156,9 @@ for i in range(N):
         bit_j = int(i_bits[j])
         if bit_j == 1:
             s_G[i] *= xs[j]
-            s_H[i] *= xs[j] ^ -1
+            s_H[i] *= 1 / xs[j]
         else:
-            s_G[i] *= xs[j] ^ -1
+            s_G[i] *= 1 / xs[j]
             s_H[i] *= xs[j]
 
 print("s_G = ", s_G)
