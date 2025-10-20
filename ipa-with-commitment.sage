@@ -152,14 +152,14 @@ s_H = [Fr(1) for _ in range(N)]
 
 for i in range(N):
     i_bits = bin(i)[2:].zfill(int(math.log(N, 2)))
-    for j in range(int(math.log(N, 2))):
-        bit_j = int(i_bits[j])
+    for k in range(int(math.log(N, 2))):
+        bit_j = int(i_bits[k])
         if bit_j == 1:
-            s_G[i] *= xs[j]
-            s_H[i] *= 1 / xs[j]
+            s_G[i] *= xs[k]
+            s_H[i] *= 1 / xs[k]
         else:
-            s_G[i] *= 1 / xs[j]
-            s_H[i] *= xs[j]
+            s_G[i] *= 1 / xs[k]
+            s_H[i] *= xs[k]
 
 print("s_G = ", s_G)
 print("s_H = ", s_H)
