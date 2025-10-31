@@ -1,13 +1,5 @@
 import math
 
-p = 929
-Fp = GF(p)
-E = EllipticCurve(Fp, [5, 15])
-G = E.gens()[0]
-Fr = GF(G.order())
-assert is_prime(G.order())
-
-
 def inner_product(a, b):
     assert len(a) == len(b)
     return sum([_a * _b for (_a, _b) in zip(a, b)])
@@ -39,7 +31,7 @@ def get_LR(a, b, Gs, Hs, Q):
         inner_product(aR, bL) * Q
     return L, R
 
-def round(a, b, Gs, Hs, P, Q):
+def round(a, b, Gs, Hs, P, Q, Fr):
     L, R = get_LR(a, b, Gs, Hs, Q)
     x = Fr.random_element()
     a_prime = fold(a, x)
@@ -51,12 +43,16 @@ def round(a, b, Gs, Hs, P, Q):
     assert P_prime == P + x ^ 2 * L + x ^ (-2) * R
     return x, L, R, a_prime, b_prime, G_prime, H_prime, P_prime
 
-def ipa(a, b, Gs, Hs, P, Q):
+def ipa(a, b, Gs, Hs, c, Q, Fr):
+    _c = inner_product(a, b)
+    assert c == _c
+    P = inner_product(a, Gs) + inner_product(b, Hs) + c * Q
+
     xs = []
     Ls = []
     Rs = []
     while len(a) > 1:
-        x,L,R,a,b,Gs,Hs,P = round(a, b, Gs, Hs, P, Q)
+        x,L,R,a,b,Gs,Hs,P = round(a, b, Gs, Hs, P, Q, Fr)
         xs.append(x)
         Ls.append(L)
         Rs.append(R)
@@ -67,7 +63,7 @@ def ipa(a, b, Gs, Hs, P, Q):
     print("P = ", P)
     return xs, Ls, Rs, a, b
 
-def folding_weights(xs, N):
+def folding_weights(xs, N, Fr):
     s_G = [Fr(1) for _ in range(N)]
     s_H = [Fr(1) for _ in range(N)]
 
@@ -84,8 +80,8 @@ def folding_weights(xs, N):
 
     return s_G, s_H
 
-def verify(N, Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final):
-    s_G, s_H = folding_weights(xs, N)
+def verify(Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final, N, Fr):
+    s_G, s_H = folding_weights(xs, N, Fr)
     print("s_G = ", s_G)
     print("s_H = ", s_H)
 
@@ -99,6 +95,13 @@ def verify(N, Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final):
     assert P == P_final - sum([xs[i] ^ 2 * Ls[i] + xs[i] ^ (-2) * Rs[i] for i in range(len(xs))])
 
 def run_ipa():
+    p = 929
+    Fp = GF(p)
+    E = EllipticCurve(Fp, [5, 15])
+    G = E.gens()[0]
+    Fr = GF(G.order())
+    assert is_prime(G.order())
+
     print("We define Q as a random point on the curve")
     Q = E.random_point()
 
@@ -112,11 +115,10 @@ def run_ipa():
     Gs = [E.random_point() for _ in range(N)]
     Hs = [E.random_point() for _ in range(N)]
 
-    P = inner_product(a, Gs) + inner_product(b, Hs) + inner_product(a, b) * Q
-
-    xs, Ls, Rs, a_final, b_final = ipa(a, b, Gs, Hs, P, Q)
+    xs, Ls, Rs, a_final, b_final = ipa(a, b, Gs, Hs, inner_product(a, b), Q, Fr)
 
     # Verification
-    verify(N, Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final)
+    P = inner_product(a, Gs) + inner_product(b, Hs) + inner_product(a, b) * Q
+    verify(Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final, N, Fr)
     print("Verification successful!")
 # run_ipa()
