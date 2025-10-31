@@ -22,18 +22,24 @@ def fold(vec, val):
 
 
 n = 8  # number of bits
+print(f"We will be proving that v is between 0 and {pow(2, n)}\n")
 
-G = Fr.random_element()
-H = Fr.random_element()
+G = E.random_point()
+H = E.random_point()
 
-Gs = [Fr.random_element() for _ in range(n)]
-Hs = [Fr.random_element() for _ in range(n)]
+Gs = [E.random_point() for _ in range(n)]
+Hs = [E.random_point() for _ in range(n)]
 
 v = Fr(random.randint(0, pow(2, n)))
 print("v =", v)
 
 v_bin = bin(v)[2:].zfill(n)[::-1][:n]
 print("v_bin = ", v_bin)
+
+print("\nWe can commit to v from the start")
+blinding_gamma = Fr.random_element()
+V = v * G + blinding_gamma * H
+print(f"v commitment (V): {V}\n")
 
 aL = vector([Fr(int(bit)) for bit in v_bin])
 assert v == sum([aL[i] * 2 ^ i for i in range(n)])
@@ -44,7 +50,6 @@ assert v == inner_product(aL, vec_2n)
 
 # (1, 1, 1, ..., 1)
 vec_1n = vector([Fr(1)] * n)
-print("vec_1n", vec_1n)
 
 aR = aL - vec_1n
 assert inner_product(aL, aR) == 0
@@ -65,10 +70,6 @@ blinding_beta = Fr.random_element()
 
 S = inner_product(sL, Gs) + inner_product(sR, Hs) + blinding_beta * H
 print("S = ", S)
-
-# blinding_gamma = Fr.random_element()
-blinding_gamma = Fr(218)
-V = v * G + blinding_gamma * H
 
 print("\nProver sends A, S, V to Verifier")
 print("Verifier sends random challenges y and z\n")
