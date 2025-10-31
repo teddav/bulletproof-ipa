@@ -123,11 +123,15 @@ assert check1_lhs == check1_rhs
 print("Check 1 ✅")
 
 P = - proof_blindings_mu * H + A + S*x + inner_product(-vec_z_1n, Gs) + inner_product(z * vec_y_n + z ^ 2 * vec_2n, H_y_minus1)
+print("P = ", P)
 assert P == inner_product(lx, Gs) + inner_product(rx, H_y_minus1) 
+print("Check 2 ✅")
 
 Q = E.random_point()
-ipa_proof = ipa(lx, rx, Gs, H_y_minus1, inner_product(lx, rx), Q, Fr)
-
-print("Check 2 ✅")
+c = inner_product(lx, rx)
+ipa_proof = ipa(lx, rx, Gs, H_y_minus1, c, Q, Fr)
+P_full = P + c * Q
+verify(Gs, H_y_minus1, P_full, ipa_proof[0], ipa_proof[1], ipa_proof[2], ipa_proof[3], ipa_proof[4], Q, n, Fr)
+print("IPA proof ✅")
 
 print("Verification successful")

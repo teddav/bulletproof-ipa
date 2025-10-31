@@ -56,11 +56,11 @@ def ipa(a, b, Gs, Hs, c, Q, Fr):
         xs.append(x)
         Ls.append(L)
         Rs.append(R)
-    print("a = ", a)
-    print("b = ", b)
-    print("Gs = ", Gs)
-    print("Hs = ", Hs)
-    print("P = ", P)
+    # print("a = ", a)
+    # print("b = ", b)
+    # print("Gs = ", Gs)
+    # print("Hs = ", Hs)
+    # print("P = ", P)
     return xs, Ls, Rs, a, b
 
 def folding_weights(xs, N, Fr):
@@ -80,18 +80,18 @@ def folding_weights(xs, N, Fr):
 
     return s_G, s_H
 
-def verify(Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final, N, Fr):
+def verify(Gs, Hs, P, xs, Ls, Rs, a_final, b_final, Q, N, Fr):
     s_G, s_H = folding_weights(xs, N, Fr)
-    print("s_G = ", s_G)
-    print("s_H = ", s_H)
+    # print("s_G = ", s_G)
+    # print("s_H = ", s_H)
 
     G_final = inner_product(s_G, Gs)
     H_final = inner_product(s_H, Hs)
-    print("G_final = ", G_final)
-    print("H_final = ", H_final)
+    # print("G_final = ", G_final)
+    # print("H_final = ", H_final)
 
     P_final = inner_product(a_final, [G_final]) + inner_product(b_final, [H_final]) + inner_product(a_final, b_final) * Q
-    print("P_final = ", P_final)
+    # print("P_final = ", P_final)
     assert P == P_final - sum([xs[i] ^ 2 * Ls[i] + xs[i] ^ (-2) * Rs[i] for i in range(len(xs))])
 
 def run_ipa():
@@ -119,6 +119,6 @@ def run_ipa():
 
     # Verification
     P = inner_product(a, Gs) + inner_product(b, Hs) + inner_product(a, b) * Q
-    verify(Q, Gs, Hs, P, xs, Ls, Rs, a_final, b_final, N, Fr)
+    verify(Gs, Hs, P, xs, Ls, Rs, a_final, b_final, Q, N, Fr)
     print("Verification successful!")
 # run_ipa()
