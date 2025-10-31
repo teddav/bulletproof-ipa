@@ -25,7 +25,6 @@ n = 8  # number of bits
 
 G = Fr.random_element()
 H = Fr.random_element()
-B = Fr.random_element()
 
 Gs = [Fr.random_element() for _ in range(n)]
 Hs = [Fr.random_element() for _ in range(n)]
@@ -55,7 +54,7 @@ print("aR = ", aR)
 
 blinding_alpha = Fr.random_element()
 
-A = inner_product(aL, Gs) + inner_product(aR, Hs) + blinding_alpha * B
+A = inner_product(aL, Gs) + inner_product(aR, Hs) + blinding_alpha * H
 print("A = ", A)
 
 # linear terms for left and right polys
@@ -64,12 +63,12 @@ sR = vector([Fr.random_element() for i in range(n)])
 
 blinding_beta = Fr.random_element()
 
-S = inner_product(sL, Gs) + inner_product(sR, Hs) + blinding_beta * B
+S = inner_product(sL, Gs) + inner_product(sR, Hs) + blinding_beta * H
 print("S = ", S)
 
 # blinding_gamma = Fr.random_element()
 blinding_gamma = Fr(218)
-V = v * G + blinding_gamma * B
+V = v * G + blinding_gamma * H
 
 print("\nProver sends A, S, V to Verifier")
 print("Verifier sends random challenges y and z\n")
@@ -79,16 +78,12 @@ vec_y_n = vector([y ^ i for i in range(n)])
 z = Fr.random_element()
 vec_z_1n = vector([z] * n)
 
-lhs = inner_product(aL - vec_z_1n, aR.pairwise_product(vec_y_n) + vec_y_n * z + z ^ 2 * vec_2n)
+main_inner_product = inner_product(aL - vec_z_1n, aR.pairwise_product(vec_y_n) + vec_y_n * z + z ^ 2 * vec_2n)
 
 delta_y_z = (z - z ^ 2) * inner_product(vec_1n, vec_y_n) - z ^ 3 * inner_product(vec_1n, vec_2n)
-rhs = z ^ 2 * v + delta_y_z
 
-print("lhs = ", lhs)
-print("rhs = ", rhs)
-
-assert lhs == rhs
-print("Verification successful\n")
+assert main_inner_product == z ^ 2 * v + delta_y_z
+print("Combined inner product = z ^ 2 * v + delta_y_z.\nWe can continue...\n")
 
 lX = aL - vec_z_1n + sL * X
 print("lX = ", lX)
@@ -101,49 +96,45 @@ print(f"tX = {tX}\n")
 [t0, t1, t2] = tX.coefficients(sparse=False)
 
 print("Notice that t0 is the inner product we're trying to prove\n")
-assert t0 == lhs
+assert t0 == main_inner_product
 
-blinding_t1 = Fr(123)
-blinding_t2 = Fr(456)
-T1 = t1 * G + blinding_t1 * B
-T2 = t2 * G + blinding_t2 * B
+blinding_tau1 = Fr(123)
+blinding_tau2 = Fr(456)
+T1 = t1 * G + blinding_tau1 * H
+T2 = t2 * G + blinding_tau2 * H
 print("T1 = ", T1)
 print("T2 = ", T2)
 
-print("\nVerifier sends challenge u\n")
-# u = Fr.random_element()
-u = Fr(100)
-print("u = ", u)
+print("\nVerifier sends challenge x\n")
+x = Fr.random_element()
+print("x = ", x)
 
 # evaluate left and right polys at u
-lx = lX(u)
-rx = rX(u)
-tx = tX(u)
+lx = lX(x)
+rx = rX(x)
+tx = tX(x)
 print("lx = ", lx)
 print("rx = ", rx)
 print("tx = ", tx)
-
 assert tx == lx * rx
 
-print("\nProver sends proof_blindings1 and proof_blindings2 to Verifier")
-proof_blindings1 = blinding_alpha + blinding_beta * u
-proof_blindings2 = z ^ 2 * blinding_gamma + blinding_t1 * u + blinding_t2 * u ^ 2
+print("\nProver sends proof_blindings_mu and proof_blindings_tau to Verifier")
+proof_blindings_mu = blinding_alpha + blinding_beta * x
+proof_blindings_tau = z ^ 2 * blinding_gamma + blinding_tau1 * x + blinding_tau2 * x ^ 2
 
 print("\nVerifier computes a new basis vector")
 vec_y_n_inv = vec_y_n.apply_map(lambda x: 1/x)
 H_y_minus1 = [vec_y_n_inv[i] * Hs[i] for i in range(n)]
 
 print("\nFinal verification:")
-print("Step 1:")
-P = - proof_blindings1 * B + A + S*u + inner_product(-vec_z_1n, Gs) + inner_product(z * vec_y_n + z ^ 2 * vec_2n, H_y_minus1)
 
+check1_lhs = tx * G + proof_blindings_tau * H
+check1_rhs = V * z ^ 2 + delta_y_z * G + T1 * x + T2 * x ^ 2
+assert check1_lhs == check1_rhs
+print("Check 1 ✅")
+
+P = - proof_blindings_mu * H + A + S*x + inner_product(-vec_z_1n, Gs) + inner_product(z * vec_y_n + z ^ 2 * vec_2n, H_y_minus1)
 assert P == inner_product(lx, Gs) + inner_product(rx, H_y_minus1) 
-print("Step 1 ✅")
-
-final2_lhs = tx * G + proof_blindings2 * B
-final2_rhs = V * z ^ 2 + delta_y_z * G + T1 * u + T2 * u ^ 2
-
-assert final2_lhs == final2_rhs
-print("Step 2 ✅")
+print("Check 2 ✅")
 
 print("Verification successful")
