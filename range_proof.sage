@@ -9,18 +9,6 @@ Fr = GF(E.gens()[0].order())
 R.<X> = Fr[]
 
 
-def inner_product(a, b):
-    assert len(a) == len(b)
-    return sum([_a * _b for (_a, _b) in zip(a, b)])
-
-
-def fold(vec, val):
-    res = []
-    for i in range(0, len(vec), 2):
-        res.append(vec[i] * val + vec[i+1] * (1 / val))
-    return res
-
-
 n = 8  # number of bits
 print(f"We will be proving that v is between 0 and {pow(2, n)}\n")
 
@@ -136,6 +124,10 @@ print("Check 1 ✅")
 
 P = - proof_blindings_mu * H + A + S*x + inner_product(-vec_z_1n, Gs) + inner_product(z * vec_y_n + z ^ 2 * vec_2n, H_y_minus1)
 assert P == inner_product(lx, Gs) + inner_product(rx, H_y_minus1) 
+
+Q = E.random_point()
+ipa_proof = ipa(lx, rx, Gs, H_y_minus1, inner_product(lx, rx), Q, Fr)
+
 print("Check 2 ✅")
 
 print("Verification successful")
