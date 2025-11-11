@@ -6,8 +6,6 @@ p = 929
 Fp = GF(p)
 E = EllipticCurve(Fp, [5, 15])
 Fr = GF(E.gens()[0].order())
-R.<X> = Fr[]
-
 
 n = 8  # number of bits
 print(f"We will be proving that v is between 0 and {pow(2, n)}\n")
@@ -46,20 +44,18 @@ print("aL = ", aL)
 print("aR = ", aR)
 
 blinding_alpha = Fr.random_element()
-
 A = inner_product(aL, Gs) + inner_product(aR, Hs) + blinding_alpha * H
 print("A = ", A)
 
-# linear terms for left and right polys
+# blinding terms for left and right polys
 sL = vector([Fr.random_element() for i in range(n)])
 sR = vector([Fr.random_element() for i in range(n)])
 
 blinding_beta = Fr.random_element()
-
 S = inner_product(sL, Gs) + inner_product(sR, Hs) + blinding_beta * H
 print("S = ", S)
-
 print("\nProver sends A, S, V to Verifier")
+
 print("Verifier sends random challenges y and z\n")
 y = Fr.random_element()
 vec_y_n = vector([y ^ i for i in range(n)])
@@ -73,6 +69,8 @@ delta_y_z = (z - z ^ 2) * inner_product(vec_1n, vec_y_n) - z ^ 3 * inner_product
 
 assert main_inner_product == z ^ 2 * v + delta_y_z
 print("Combined inner product = z ^ 2 * v + delta_y_z.\nWe can continue...\n")
+
+R.<X> = Fr[]
 
 lX = aL - vec_z_1n + sL * X
 print("lX = ", lX)
