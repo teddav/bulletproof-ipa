@@ -11,11 +11,10 @@ Fr = GF(E.gens()[0].order())
 n = 8  # number of bits
 print(f"We will be proving that v is between 0 and {pow(2, n)}\n")
 
-G = E.random_point()
-H = E.random_point()
-
-Gs = [E.random_point() for _ in range(n)]
-Hs = [E.random_point() for _ in range(n)]
+# (2^0, 2^1, 2^2, ..., 2^(n-1))
+vec_2n = vector([Fr(2 ^ i) for i in range(n)])
+# (1, 1, 1, ..., 1)
+vec_1n = vector([Fr(1)] * n)
 
 v = Fr(random.randint(0, pow(2, n)))
 print("v =", v)
@@ -23,33 +22,37 @@ print("v =", v)
 v_bin = bin(v)[2:].zfill(n)[::-1][:n]
 print("v_bin = ", v_bin)
 
-print("\nWe can commit to v from the start")
-blinding_gamma = Fr.random_element()
-V = v * G + blinding_gamma * H
-print(f"v commitment (V): {V}\n")
-
 aL = vector([Fr(int(bit)) for bit in v_bin])
 assert v == sum([aL[i] * 2 ^ i for i in range(n)])
 
-# (2^0, 2^1, 2^2, ..., 2^(n-1))
-vec_2n = vector([Fr(2 ^ i) for i in range(n)])
 assert v == inner_product(aL, vec_2n)
 
-# (1, 1, 1, ..., 1)
-vec_1n = vector([Fr(1)] * n)
-
+# Define aR
 aR = aL - vec_1n
 assert inner_product(aL, aR) == 0
 
 print("aL = ", aL)
 print("aR = ", aR)
 
-blinding_alpha = Fr.random_element()
+# Define generators
+G = E.random_point()
+H = E.random_point()
 
+Gs = [E.random_point() for _ in range(n)]
+Hs = [E.random_point() for _ in range(n)]
+
+# Commit to v
+print("\nWe can commit to v from the start")
+blinding_gamma = Fr.random_element()
+V = v * G + blinding_gamma * H
+print(f"v commitment (V): {V}\n")
+
+
+blinding_alpha = Fr.random_element()
 A = inner_product(aL, Gs) + inner_product(aR, Hs) + blinding_alpha * H
 print("A = ", A)
-
 print("\nProver sends A, V to Verifier")
+
 print("Verifier sends random challenges y and z\n")
 y = Fr.random_element()
 vec_y_n = vector([y ^ i for i in range(n)])
