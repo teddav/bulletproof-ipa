@@ -128,9 +128,9 @@ assert P == inner_product(lx, Gs) + inner_product(rx, H_y_minus1)
 print("Check 2 ✅")
 
 Q = E.random_point()
-c = inner_product(lx, rx)
-ipa_proof = ipa(lx, rx, Gs, H_y_minus1, c, Q, Fr)
-P_full = P + c * Q
+print("Remember that tx = <lx,rx>")
+ipa_proof = ipa(lx, rx, Gs, H_y_minus1, tx, Q, Fr)
+P_full = P + tx * Q
 verify(Gs, H_y_minus1, P_full, ipa_proof[0], ipa_proof[1], ipa_proof[2], ipa_proof[3], ipa_proof[4], Q, n, Fr)
 print("IPA proof ✅")
 
